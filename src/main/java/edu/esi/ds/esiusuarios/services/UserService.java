@@ -1,38 +1,39 @@
 package edu.esi.ds.esiusuarios.services;
 
 import java.util.List;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import edu.esi.ds.esiusuarios.model.User;
+import edu.esi.ds.esiusuarios.dao.UserDao;
 
 @Service
 public class UserService {
+    @Autowired
+    private UserDao userDao;
 
-    private List<User> users;
-    
-    public UserService() {
-        this.users = List.of(
-            new User("Pepe", "pepe123", "token123"),
-            new User("Ana", "ana123", "token456")
-        );
-    }
-
+    /*
     public String login(String name, String password) {
         for (User user : this.users) {
             if(user.getName().equals(name) && user.getPassword().equals(password)) {
-                return "Login successful for user: " + name;
+                String sessionToken = UUID.randomUUID().toString();
+                user.setToken(sessionToken);
+                return sessionToken;
             }
         }
         return null;  // Si no se encuentra el usuario o la contraseña es incorrecta, devolvemos null y lo comprobamos en el controlador para lanzar la excepción adecuada
     }
+    */
 
-    public String checkToken(String token) {
-        for (User user : this.users) {
-            if(user.getToken().equals(token)) {
-                return user.getName();
-            }
-        }
-        return null;  // Si no se encuentra el token, devolvemos null y lo comprobamos en el controlador para lanzar la excepción adecuada
+    public String checkUserToken(String userToken) {
+        return this.userDao.checkUserToken(userToken);
+    }
+
+    public Object[] getUserInfoEmail(String userToken) {
+        return this.userDao.getUserInfoEmailByToken(userToken);
+    }
+
+    public String registrar() {
+        return "Registro exitoso";
     }
 }

@@ -20,6 +20,7 @@ public class UserController {
     @Autowired
     private UserService service;
 
+    /*
     @PostMapping("/login")
     public String login(@RequestBody Map<String, String> credentials) {  // Las enviaremos: {"name": "Pepe", "pwd": "pepe123"}
         JSONObject jsonCredentials = new JSONObject(credentials);  // Convertimos el Map a un JSONObject para facilitar el acceso a los campos
@@ -36,4 +37,8 @@ public class UserController {
         
         return result;
     }
+    */
+
+
+    // metodo para comporbar qu eel email esta correcto automaticamente
 }
