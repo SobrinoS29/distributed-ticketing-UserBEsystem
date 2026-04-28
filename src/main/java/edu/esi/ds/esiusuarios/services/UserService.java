@@ -3,34 +3,30 @@ package edu.esi.ds.esiusuarios.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import edu.esi.ds.esiusuarios.dao.UserDao;
+import edu.esi.ds.esiusuarios.model.Usuario;
 
 @Service
 public class UserService {
     @Autowired
     private UserDao userDao;
 
-    /*
-    public String login(String name, String password) {
-        for (User user : this.users) {
-            if(user.getName().equals(name) && user.getPassword().equals(password)) {
-                String sessionToken = UUID.randomUUID().toString();
-                user.setToken(sessionToken);
-                return sessionToken;
-            }
+    public String login(String mail, String password) {  // Autenticar al usuario y generar un token de sesión
+        Usuario user = this.userDao.findByMailAndPasswordHash(mail, password).orElse(null);  // Buscamos el usuario por su email y contraseña (hash) y si no lo encontramos devolvemos null
+        if(user != null) {
+            String session_token = java.util.UUID.randomUUID().toString();
+            user.setSessionToken(session_token);
+            user.setLastLoginAt(java.time.LocalDateTime.now());
+            this.userDao.save(user);
+            return session_token;
         }
-        return null;  // Si no se encuentra el usuario o la contraseña es incorrecta, devolvemos null y lo comprobamos en el controlador para lanzar la excepción adecuada
-    }
-    */
-
-    public String checkUserToken(String userToken) {
-        return this.userDao.checkUserToken(userToken);
+        return null;
     }
 
-    public Object[] getUserInfoEmail(String userToken) {
-        return this.userDao.getUserInfoEmailByToken(userToken);
+    public String checkUserToken(String sessionToken) {
+        return this.userDao.checkUserToken(sessionToken);
     }
 
-    public String registrar() {
-        return "Registro exitoso";
+    public Object[] getUserInfoEmail(String sessionToken) {
+        return this.userDao.getUserInfoEmailByToken(sessionToken);
     }
-}
+}   

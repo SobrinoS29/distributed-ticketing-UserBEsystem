@@ -18,8 +18,8 @@ import jakarta.persistence.UniqueConstraint;
 @Table(
     name = "usuario",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_usuario_username", columnNames = "username"),
-        @UniqueConstraint(name = "uk_usuario_email", columnNames = "email")
+        @UniqueConstraint(name = "uk_user_username", columnNames = "username"),
+        @UniqueConstraint(name = "uk_user_email", columnNames = "email")
     }
 )
 public class Usuario {
@@ -34,7 +34,7 @@ public class Usuario {
     private String passwordHash;
 
     @Column(name = "session_token", unique = true, length = 128)
-    private String token;
+    private String sessionToken;
 
     @Column(name = "email", nullable = false, length = 120)
     private String email;
@@ -125,12 +125,12 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getToken() {
-        return token;
+    public String getSessionToken() {
+        return sessionToken;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setSessionToken(String sessionToken) {
+        this.sessionToken = sessionToken;
     }
 
     public UserRole getRole() {
