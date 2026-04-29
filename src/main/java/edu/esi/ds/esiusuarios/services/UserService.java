@@ -13,20 +13,37 @@ public class UserService {
     public String login(String mail, String password) {  // Autenticar al usuario y generar un token de sesión
         Usuario user = this.userDao.findByMailAndPasswordHash(mail, password).orElse(null);  // Buscamos el usuario por su email y contraseña (hash) y si no lo encontramos devolvemos null
         if(user != null) {
-            String session_token = java.util.UUID.randomUUID().toString();
-            user.setSessionToken(session_token);
+            String userToken = java.util.UUID.randomUUID().toString();
+            user.setUserToken(userToken);
             user.setLastLoginAt(java.time.LocalDateTime.now());
             this.userDao.save(user);
-            return session_token;
+            return userToken;
         }
         return null;
     }
 
-    public String checkUserToken(String sessionToken) {
-        return this.userDao.checkUserToken(sessionToken);
+    public String checkUserToken(String userToken) {
+        return this.userDao.checkUserToken(userToken);
     }
 
-    public Object[] getUserInfoEmail(String sessionToken) {
-        return this.userDao.getUserInfoEmailByToken(sessionToken);
+    public Object[] getUserInfoEmail(String userToken) {
+        return this.userDao.getUserInfoEmailByToken(userToken);
+    }
+
+    public void register(String name, String email, String password) {
+        if (name == null || name.trim().isEmpty() || email == null || email.trim().isEmpty() || password == null || password.isEmpty()) {
+            return;
+        }
+
+        String normalizedName = name.trim();
+        String normalizedEmail = email.trim();
+
+        if (this.userDao.existsByUsername(normalizedName) || this.userDao.existsByEmail(normalizedEmail)) {
+            return;
+        }
+
+        Usuario user = new Usuario(normalizedName, password, normalizedEmail);
+        this.userDao.save(user);
+        return;
     }
 }   

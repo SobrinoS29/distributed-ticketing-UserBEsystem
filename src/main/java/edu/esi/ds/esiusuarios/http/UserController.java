@@ -38,6 +38,17 @@ public class UserController {
         return result;
     }
 
+    @PostMapping("/register")
+    public void register(@RequestBody Map<String, String> credentials) {
+        JSONObject jsonCredentials = new JSONObject(credentials);
+        String name = jsonCredentials.optString("name").trim();
+        String email = jsonCredentials.optString("email").trim();
+        String password = jsonCredentials.optString("pwd");
+
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Missing registration data");
+        }
+    }
 
     // metodo para comporbar qu eel email esta correcto automaticamente
 }

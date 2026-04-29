@@ -20,11 +20,11 @@ public class ExternalController {
     private UserService userService;
 
     @GetMapping("/checkUserToken")
-    public String checkToken(@RequestParam String sessionToken) {
-        if(sessionToken == null || sessionToken.isEmpty()) {
+    public String checkToken(@RequestParam String userToken) {
+        if(userToken == null || userToken.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Token is required");
         }
-        String userCheck = this.userService.checkUserToken(sessionToken);
+        String userCheck = this.userService.checkUserToken(userToken);
         if(userCheck == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error 401: Invalid token");
         }
@@ -32,11 +32,11 @@ public class ExternalController {
     }
 
     @GetMapping("/getUserInfoEmail")
-    public Object[] getUserInfoEmail(@RequestParam String sessionToken) {
-        if (sessionToken == null || sessionToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sessionToken is required");
+    public Object[] getUserInfoEmail(@RequestParam String userToken) {
+        if (userToken == null || userToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userToken is required");
         }
-        Object[] data = userService.getUserInfoEmail(sessionToken);
+        Object[] data = userService.getUserInfoEmail(userToken);
         if (data == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalid");
         }
