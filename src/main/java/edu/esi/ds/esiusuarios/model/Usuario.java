@@ -14,9 +14,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-@Entity(name = "usuario")
+@Entity(name = "usuarios")
 @Table(
-    name = "usuario",
+    name = "usuarios",
     uniqueConstraints = {
         @UniqueConstraint(name = "uk_user_username", columnNames = "username"),
         @UniqueConstraint(name = "uk_user_email", columnNames = "email")
@@ -29,9 +29,6 @@ public class Usuario {
 
     @Column(name = "username", nullable = false, length = 50)
     private String username;
-
-    @Column(name = "password_hash", nullable = false, length = 255)
-    private String passwordHash;
 
     @Column(name = "user_token", unique = true, length = 128)
     private String userToken;
@@ -55,9 +52,8 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(String username, String passwordHash, String email) {
+    public Usuario(String username, String email) {
         this.username = username;
-        this.passwordHash = passwordHash;
         this.email = email;
         this.role = UserRole.USER;
     }
@@ -99,22 +95,6 @@ public class Usuario {
 
     public void setName(String name) {
         this.username = name;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getPassword() {
-        return passwordHash;
-    }
-
-    public void setPassword(String password) {
-        this.passwordHash = password;
     }
 
     public String getEmail() {

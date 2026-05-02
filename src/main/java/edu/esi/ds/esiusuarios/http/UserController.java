@@ -48,7 +48,10 @@ public class UserController {
         if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Missing registration data");
         }
+        boolean success = this.userService.register(name, email, password);
+        if (success) {
+            // Enviaremos un mesnaje al correo de confirmación de registro
+        }
+        return;
     }
-
-    // metodo para comporbar qu eel email esta correcto automaticamente
 }
