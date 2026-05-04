@@ -3,12 +3,15 @@ package edu.esi.ds.esiusuarios.dao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.util.Optional;
 
 import edu.esi.ds.esiusuarios.model.Usuario;
 
 public interface UserDao extends JpaRepository<Usuario, Long> {
 
     java.util.Optional<Usuario> findByUserToken(String userToken);
+
+    Optional<Usuario> findByEmail(String email);
 
     @Query("SELECT u.username FROM usuarios u WHERE u.userToken = :userToken")
     String checkUserToken(@Param("userToken") String userToken);  // Método para comprobar si el token de sesión es válido y devolver el nombre del usuario asociado a ese token

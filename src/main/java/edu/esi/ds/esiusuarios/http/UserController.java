@@ -10,7 +10,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.esi.ds.esiusuarios.services.UserService;
 
@@ -53,5 +55,44 @@ public class UserController {
             // Enviaremos un mesnaje al correo de confirmación de registro
         }
         return;
+    }
+
+    @PostMapping("/forgot-password")
+    public Map<String, String> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Email is required");
+        }
+        
+        String frontendUrl = request.getOrDefault("frontendUrl", "http://localhost:4200");
+        String message = this.userService.requestPasswordReset(email.trim(), frontendUrl);
+        return Map.of("message", message);
+    }
+
+    @GetMapping("/reset-password/validate")
+    public Map<String, Boolean> validateResetToken(@RequestParam String token) {
+        if (token == null || token.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Token is required");
+        }
+        
+        boolean isValid = this.userService.validateResetToken(token);
+        return Map.of("valid", isValid);
+    }
+
+    @PostMapping("/reset-password")
+    public Map<String, String> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        if (token == null || token.trim().isEmpty() || newPassword == null || newPassword.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Token and password are required");
+        }
+
+        boolean success = this.userService.resetPassword(token, newPassword);
+        if (!success) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error 401: Invalid or expired token");
+        }
+
+        return Map.of("message", "Contraseña actualizada con éxito");
     }
 }
