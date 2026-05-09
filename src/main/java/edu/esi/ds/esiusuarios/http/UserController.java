@@ -37,6 +37,9 @@ public class UserController {
         if(result == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error 403: Invalid Credentials");
         }
+        if("UNVERIFIED".equals(result)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Error 403: Email not verified. Please check your email for the verification link.");
+        }
         return result;
     }
 
@@ -52,9 +55,23 @@ public class UserController {
         }
         boolean success = this.userService.register(name, email, password);
         if (success) {
-            // Enviaremos un mesnaje al correo de confirmación de registro
+            // Email de confirmación será enviado por el servicio
         }
         return;
+    }
+
+    @GetMapping("/verify-email")
+    public Map<String, String> verifyEmail(@RequestParam String token) {
+        if (token == null || token.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error 400: Token is required");
+        }
+
+        boolean success = this.userService.verifyEmail(token);
+        if (!success) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error 401: Invalid or expired token");
+        }
+
+        return Map.of("message", "Email verificado correctamente. Ya puedes iniciar sesión.");
     }
 
     @PostMapping("/forgot-password")

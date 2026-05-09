@@ -49,6 +49,9 @@ public class Usuario {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "verified", nullable = false)
+    private Boolean verified = false;
+
     public Usuario() {
     }
 
@@ -143,5 +146,13 @@ public class Usuario {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getVerified() {
+        return verified;
+    }
+
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
     }
 }

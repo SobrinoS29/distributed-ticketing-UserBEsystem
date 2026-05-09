@@ -13,9 +13,13 @@ import org.springframework.beans.factory.annotation.Value;
 import edu.esi.ds.esiusuarios.dao.OrionDao;
 import edu.esi.ds.esiusuarios.dao.UserDao;
 import edu.esi.ds.esiusuarios.dao.PasswordResetTokenDao;
+import edu.esi.ds.esiusuarios.dao.EmailVerificationTokenDao;
 import edu.esi.ds.esiusuarios.model.Orion;
 import edu.esi.ds.esiusuarios.model.Usuario;
 import edu.esi.ds.esiusuarios.model.PasswordResetToken;
+import edu.esi.ds.esiusuarios.model.EmailVerificationToken;
+
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +34,9 @@ public class UserService {
     @Autowired
     private PasswordResetTokenDao passwordResetTokenDao;
 
+    @Autowired
+    private EmailVerificationTokenDao emailVerificationTokenDao;
+
     @Value("${esientradas.service.url:http://localhost:8080}")
     private String esiEntradosServiceUrl;
 
@@ -43,6 +50,9 @@ public class UserService {
         Orion credential = this.orionDao.findByUsuarioEmail(mail).orElse(null);
         if (credential != null && this.passwordEncoder.matches(password, credential.getAccessHash())) {
             Usuario user = credential.getUsuario();
+            if (!user.getVerified()) {
+                return "UNVERIFIED";
+            }
             String userToken = java.util.UUID.randomUUID().toString();
             user.setUserToken(userToken);
             user.setLastLoginAt(java.time.LocalDateTime.now());
@@ -74,11 +84,34 @@ public class UserService {
         }
 
         Usuario user = new Usuario(normalizedName, normalizedEmail);
+        user.setVerified(false);
         this.userDao.save(user);
 
         String encodedPassword = this.passwordEncoder.encode(password);
         Orion credential = new Orion(user, encodedPassword);
         this.orionDao.save(credential);
+
+        // Generar token de verificación
+        String verificationToken = java.util.UUID.randomUUID().toString();
+        LocalDateTime expiryDate = LocalDateTime.now().plusHours(24);  // Válido por 24 horas
+        EmailVerificationToken token = new EmailVerificationToken(verificationToken, user, expiryDate);
+        this.emailVerificationTokenDao.save(token);
+
+        // Enviar correo de confirmación a través de esiEntradas
+        try {
+            String emailUrl = esiEntradosServiceUrl + "/email/enviar-verificacion-email";
+            Map<String, String> emailRequest = new HashMap<>();
+            emailRequest.put("email", normalizedEmail);
+            emailRequest.put("verificationToken", verificationToken);
+            emailRequest.put("frontendUrl", "https://localhost:4200");
+
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(emailRequest);
+            restTemplate.exchange(emailUrl, HttpMethod.POST, request, String.class);
+        } catch (Exception e) {
+            // Log the error but don't fail the registration
+            System.err.println("No se pudo enviar el correo de verificación: " + e.getMessage());
+        }
+
         return true;
     }
 
@@ -160,6 +193,23 @@ public class UserService {
         } catch (Exception e) {
             throw new IllegalStateException("No se pudo enviar el correo de confirmación: " + e.getMessage(), e);
         }
+
+        return true;
+    }
+
+    @Transactional
+    public boolean verifyEmail(String token) {
+        EmailVerificationToken verificationToken = this.emailVerificationTokenDao.findByToken(token).orElse(null);
+        if (verificationToken == null || verificationToken.isExpired()) {
+            return false;
+        }
+
+        Usuario user = verificationToken.getUsuario();
+        user.setVerified(true);
+        this.userDao.save(user);
+
+        // Eliminar token usado
+        this.emailVerificationTokenDao.delete(verificationToken);
 
         return true;
     }
